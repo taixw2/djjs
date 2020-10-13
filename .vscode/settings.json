@@ -1,0 +1,6 @@
+{
+  "eslint.enable": false,
+  "eslint.validate": ["javascript", "typescript"],
+  "editor.formatOnSave": true,
+  "commentTranslate.targetLanguage": "en"
+}

@@ -1,0 +1,129 @@
+const root = require('../src/index')
+
+async function invokeSCF(func) {
+  return await func(
+    {
+      requestContext: {
+        serviceId: 'service-f94sy04v',
+        path: '/test/{path}',
+        httpMethod: 'POST',
+        requestId: 'c6af9ac6-7b61-11e6-9a41-93e8deadbeef',
+        identity: {
+          secretId: 'abdcdxxxxxxxsdfs',
+        },
+        sourceIp: '10.0.2.14',
+        stage: 'release',
+      },
+      headers: {
+        'Accept-Language': 'en-US,en,cn',
+        Accept: 'text/html,application/xml,application/json',
+        Host: 'service-3ei3tii4-251000691.ap-guangzhou.apigateway.myqloud.com',
+        'User-Agent': 'User Agent String',
+      },
+      body: '{"test":"body"}',
+      pathParameters: {
+        path: 'value',
+      },
+      queryStringParameters: {
+        foo: 'bar',
+      },
+      headerParameters: {
+        Refer: '10.0.2.14',
+      },
+      stageVariables: {
+        stage: 'release',
+      },
+      path: '/test/value',
+      queryString: {
+        foo: 'bar',
+        bob: 'alice',
+      },
+      httpMethod: 'POST',
+    },
+    {
+      getRemainingTimeInMillis: () => {},
+      memory_limit_in_mb: 128,
+      time_limit_in_ms: 3000,
+      request_id: '4ca7089c-3bb0-48cf-bcdb-26d130fed2ae',
+      environment: '{"SCF_NAMESPACE":"default"}',
+      environ: 'SCF_NAMESPACE=default;SCF_NAMESPACE=default',
+      function_version: '$LATEST',
+      function_name: 'test',
+      namespace: 'default',
+      tencentcloud_region: 'ap-chengdu',
+      tencentcloud_appid: '1253970226',
+      tencentcloud_uin: '3473058547',
+    },
+  )
+}
+
+test('should return empty object', async () => {
+  const response = await invokeSCF(root.func(() => {}))
+  expect(response).toStrictEqual({})
+})
+
+test('should return response', async () => {
+  const mockResponse = {
+    ec: 0,
+    data: {},
+    errMsg: 'ok;',
+  }
+
+  const response = await invokeSCF(
+    root.func((context) => {
+      context.setResponse(mockResponse.data, mockResponse.ec, mockResponse.errMsg)
+    }),
+  )
+  expect(response).toEqual(mockResponse)
+
+  const response2 = await invokeSCF(root.func((context) => context.setResponse(100010, mockResponse.errMsg)))
+  expect(response2).toEqual({
+    ec: 100010,
+    errMsg: mockResponse.errMsg,
+    data: null,
+  })
+})
+
+test('should return no strike response', async () => {
+  const mockResponse = {
+    ec: 0,
+    data: {},
+    errMsg: 'ok;',
+  }
+
+  const response = await invokeSCF(
+    root.func((context) => {
+      context.strike = false
+      context.setResponse(mockResponse.data, mockResponse.ec, mockResponse.errMsg)
+    }),
+  )
+  expect(response).not.toEqual(mockResponse)
+  expect(response).toEqual({
+    isBase64Encoded: false,
+    statusCode: 200,
+    headers: {},
+    body: JSON.stringify(mockResponse),
+  })
+})
+
+test('should set headers', async () => {
+  const mockHeaders = {
+    Accept: 'text/html,application/xml,application/json',
+    Host: 'service-3ei3tii4-251000691.ap-guangzhou.apigateway.myqloud.com',
+  }
+
+  const response = await invokeSCF(
+    root.func((context) => {
+      context.strike = false
+      context.setHeader('Accept', mockHeaders.Accept)
+      context.setHeaders({ Host: mockHeaders.Host })
+    }),
+  )
+
+  expect(response).toEqual({
+    isBase64Encoded: false,
+    statusCode: 200,
+    headers: mockHeaders,
+    body: JSON.stringify({}),
+  })
+})
