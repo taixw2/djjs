@@ -3,7 +3,7 @@ import { SDK as SCFSDK, LogType as SCFLogType } from 'tencentcloud-serverless-no
 import Database from './database'
 
 export default class DJContext {
-  constructor(private event: SCFAPIGatewayEvent, private context: SCFContext) {}
+  constructor(private event: SCFAPIGatewayEvent, private context: SCFContext) { }
 
   #response = {}
 
@@ -110,7 +110,13 @@ export default class DJContext {
 
     let responseRef = { current: null }
     try {
-      responseRef.current = await sdk.invoke({ LogType: SCFLogType.Tail, functionName, data })
+      responseRef.current = await sdk.invoke({
+        LogType: SCFLogType.Tail, functionName, data: {
+          request_id: this.context.request_id,
+          queryString: data.query ?? data.queryString ?? {},
+          body: data.body ? JSON.stringify(data.body) : "{}"
+        }
+      })
       // 穿透模式解析
       return JSON.parse(responseRef.current.Result.RetMsg)
     } catch (error) {

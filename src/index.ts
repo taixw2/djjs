@@ -41,7 +41,12 @@ export interface SCFAPIGatewayEvent {
 function func(func: (context: DJContext) => Promise<void>) {
   return async (scfEvent: SCFAPIGatewayEvent, scfContext: SCFContext) => {
     const context = new DJContext(scfEvent, scfContext)
-    await func(context)
+    try {
+      await func(context)
+    } catch (error) {
+      context.log(error)
+      context.setResponse(100006, "服务器错误")
+    }
     return context.response
   }
 }
