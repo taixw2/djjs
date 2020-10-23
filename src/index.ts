@@ -1,4 +1,6 @@
 import DJContext from './context'
+import compose from 'koa-compose'
+import _catch from './middleware/catch'
 
 export interface SCFContext {
   getRemainingTimeInMillis: () => void
@@ -38,18 +40,18 @@ export interface SCFAPIGatewayEvent {
   httpMethod: string
 }
 
-function func(func: (context: DJContext) => Promise<void>) {
+export type Next = () => Promise<any>
+export type Middlewares = (context: DJContext, next?: Next) => Promise<void>
+
+function func(...middlewares: Middlewares[]) {
   return async (scfEvent: SCFAPIGatewayEvent, scfContext: SCFContext) => {
     const context = new DJContext(scfEvent, scfContext)
-    try {
-      await func(context)
-    } catch (error) {
-      context.log(error)
-      context.setResponse(100006, "服务器错误")
-    }
+    await compose(middlewares)(context)
     return context.response
   }
 }
+
+const middlewares = func.bind(null, _catch)
 
 export default func
 export { func }

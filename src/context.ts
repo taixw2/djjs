@@ -1,9 +1,10 @@
 import { SCFAPIGatewayEvent, SCFContext } from './index'
 import { SDK as SCFSDK, LogType as SCFLogType } from 'tencentcloud-serverless-nodejs'
+import Schema, { Rules } from 'async-validator'
 import Database from './database'
 
 export default class DJContext {
-  constructor(private event: SCFAPIGatewayEvent, private context: SCFContext) { }
+  constructor(private event: SCFAPIGatewayEvent, private context: SCFContext) {}
 
   #response = {}
 
@@ -12,6 +13,8 @@ export default class DJContext {
   #status = 200
 
   public readonly db = new Database()
+
+  public readonly crypto = Crypto
 
   /**
    * 是否穿透模式
@@ -23,7 +26,11 @@ export default class DJContext {
   }
 
   public get body() {
-    return JSON.parse(this.event.body)
+    try {
+      return JSON.parse(this.event.body)
+    } catch (error) {
+      return {}
+    }
   }
 
   /**
@@ -111,16 +118,34 @@ export default class DJContext {
     let responseRef = { current: null }
     try {
       responseRef.current = await sdk.invoke({
-        LogType: SCFLogType.Tail, functionName, data: {
+        LogType: SCFLogType.Tail,
+        functionName,
+        data: {
           request_id: this.context.request_id,
           queryString: data.query ?? data.queryString ?? {},
-          body: data.body ? JSON.stringify(data.body) : "{}"
-        }
+          body: data.body ? JSON.stringify(data.body) : '{}',
+        },
       })
       // 穿透模式解析
       return JSON.parse(responseRef.current.Result.RetMsg)
     } catch (error) {
       this.log(responseRef.current, error)
     }
+  }
+
+  /**
+   * 参数校验
+   * @param descriptor 校验描述
+   * @param body 校验参数
+   */
+  async validator(descriptor: Rules, body?: Record<string, string>) {
+    const validator = new Schema(descriptor)
+    try {
+      const hasQuery = Object.keys(this.query).length
+      await validator.validate(body ? body : hasQuery ? this.query : this.body)
+    } catch (error) {
+      return Promise.reject(error[0])
+    }
+    return Promise.resolve()
   }
 }
