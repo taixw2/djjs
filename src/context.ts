@@ -4,7 +4,7 @@ import Schema, { Rules } from 'async-validator'
 import Database from './database'
 
 export default class DJContext {
-  constructor(private event: SCFAPIGatewayEvent, private context: SCFContext) {}
+  constructor(public event: SCFAPIGatewayEvent, private context: SCFContext) {}
 
   #response = {}
 
