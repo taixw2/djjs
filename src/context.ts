@@ -2,6 +2,7 @@ import { SCFAPIGatewayEvent, SCFContext } from './index'
 import { SDK as SCFSDK, LogType as SCFLogType } from 'tencentcloud-serverless-nodejs'
 import Schema, { Rules } from 'async-validator'
 import Database from './database'
+import { Crypto } from './crypto'
 
 export default class DJContext {
   constructor(public event: SCFAPIGatewayEvent, private context: SCFContext) {}
