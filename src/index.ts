@@ -53,5 +53,5 @@ function func(...middlewares: Middlewares[]) {
 
 const middlewares = func.bind(null, _catch)
 
-export default func
-export { func }
+export default middlewares
+export { middlewares as func }
