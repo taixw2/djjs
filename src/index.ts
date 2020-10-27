@@ -51,7 +51,6 @@ function func(...middlewares: Middlewares[]) {
   }
 }
 
-const middlewares = func.bind(null, _catch)
-
+const middlewares = func.bind(null, _catch) as typeof func
 export default middlewares
 export { middlewares as func }
