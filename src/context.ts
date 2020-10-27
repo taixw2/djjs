@@ -144,8 +144,8 @@ export default class DJContext {
     try {
       const hasQuery = Object.keys(this.query).length
       await validator.validate(body ? body : hasQuery ? this.query : this.body)
-    } catch (error) {
-      return Promise.reject(error[0])
+    } catch (validationError) {
+      return Promise.reject(validationError.errors[0])
     }
     return Promise.resolve()
   }
