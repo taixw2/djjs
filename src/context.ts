@@ -1,9 +1,19 @@
 import { SCFAPIGatewayEvent, SCFContext } from './index'
 const FCClient = require('@alicloud/fc2')
+import Schema, { Rules } from 'async-validator'
 import Database from './database'
+import { Crypto } from './crypto'
 
 export default class DJContext {
-  constructor(private event: SCFAPIGatewayEvent, private context: SCFContext) {}
+  event: SCFAPIGatewayEvent
+
+  constructor(public eventbuf: Buffer, private context: SCFContext) {
+    try {
+      this.event = JSON.parse(eventbuf.toString())
+    } catch (error) {
+      this.setResponse(100003, '参数异常')
+    }
+  }
 
   #response = {}
 
@@ -13,17 +23,23 @@ export default class DJContext {
 
   public readonly db = new Database()
 
+  public readonly crypto = Crypto
+
   /**
    * 是否穿透模式
    */
   public strike = false
 
   public get query() {
-    return this.event.queryParameters
+    return this.event.queryParameters ?? {}
   }
 
   public get body() {
-    return JSON.parse(this.event.body)
+    try {
+      return JSON.parse(this.event.body)
+    } catch (error) {
+      return {}
+    }
   }
 
   /**
@@ -34,8 +50,7 @@ export default class DJContext {
     return {
       isBase64Encoded: false,
       statusCode: this.#status,
-      headers: this.#headers,
-      body: JSON.stringify(this.#response),
+      body: this.#response,
     }
   }
 
@@ -107,6 +122,24 @@ export default class DJContext {
       region: 'cn-shenzhen',
       ...option,
     })
-    return await client.invokeFunction(serviceName, functionName, JSON.stringify(data))
+    const response = await client.invokeFunction(serviceName, functionName, JSON.stringify(data))
+    console.log('invoke requestid', response.headers['x-fc-request-id'])
+    return response.data
+  }
+
+  /**
+   * 参数校验
+   * @param descriptor 校验描述
+   * @param body 校验参数
+   */
+  async validator(descriptor: Rules, body?: Record<string, string>) {
+    const validator = new Schema(descriptor)
+    try {
+      const hasQuery = Object.keys(this.query).length
+      await validator.validate(body ? body : hasQuery ? this.query : this.body)
+    } catch (validationError) {
+      return Promise.reject(validationError.errors[0])
+    }
+    return Promise.resolve()
   }
 }

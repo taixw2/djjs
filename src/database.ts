@@ -1,17 +1,29 @@
-import serverlessDB from 'scf-nodejs-serverlessdb-sdk'
+import mysql from 'mysql2/promise'
 
 export default class Database {
-  #pool: any
+  pool: mysql.Pool
 
-  async init(db: string) {
-    this.#pool = await serverlessDB.database(db).pool()
+  connection: mysql.PoolConnection
+
+  async init() {
+    this.pool = mysql.createPool({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE,
+    })
   }
 
-  query(...args: any[]) {
-    return this.#pool.queryAsync(...args)
+  async initConnection() {
+    this.connection = await this.pool.getConnection()
   }
 
-  queryOne(...args: any[]) {
-    return this.query(...args).then((res: any) => res[0])
+  releaseConnection() {
+    this.connection.release()
+  }
+
+  async query(...args: any[]) {
+    const [rows] = await this.connection.query.apply(this.connection, args)
+    return rows[0]
   }
 }

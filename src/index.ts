@@ -1,4 +1,6 @@
 import DJContext from './context'
+import compose from 'koa-compose'
+import _catch from './middleware/catch'
 
 export interface SCFContext {
   requestId: string
@@ -36,13 +38,17 @@ export interface SCFAPIGatewayEvent {
   isBase64Encoded: boolean
 }
 
-function func(func: (context: DJContext) => Promise<void>) {
-  return async (scfEvent: SCFAPIGatewayEvent, scfContext: SCFContext) => {
-    const context = new DJContext(scfEvent, scfContext)
-    await func(context)
-    return context.response
+export type Next = () => Promise<any>
+export type Middlewares = (context: DJContext, next?: Next) => Promise<void>
+
+function func(...middlewares: Middlewares[]) {
+  return async (eventbuf: Buffer, scfContext: SCFContext, callback: any) => {
+    const context = new DJContext(eventbuf, scfContext)
+    await compose(middlewares)(context)
+    return callback(null, context.response)
   }
 }
 
-export default func
-export { func }
+const middlewares = func.bind(null, _catch) as typeof func
+export default middlewares
+export { middlewares as func }
