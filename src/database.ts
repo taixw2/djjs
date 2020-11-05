@@ -24,6 +24,6 @@ export default class Database {
 
   async query(...args: any[]) {
     const [rows] = await this.connection.query.apply(this.connection, args)
-    return rows[0]
+    return rows
   }
 }

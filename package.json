@@ -1,6 +1,6 @@
 {
   "name": "djjs",
-  "version": "0.0.9",
+  "version": "0.0.12",
   "main": "index.js",
   "types": "types/index.d.ts",
   "license": "MIT",
