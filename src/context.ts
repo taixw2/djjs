@@ -1,5 +1,5 @@
 import { SCFAPIGatewayEvent, SCFContext } from './index'
-import { SDK as SCFSDK, LogType as SCFLogType } from 'tencentcloud-serverless-nodejs'
+const FCClient = require('@alicloud/fc2')
 import Database from './database'
 
 export default class DJContext {
@@ -16,10 +16,10 @@ export default class DJContext {
   /**
    * 是否穿透模式
    */
-  public strike = true
+  public strike = false
 
   public get query() {
-    return this.event.queryString
+    return this.event.queryParameters
   }
 
   public get body() {
@@ -45,7 +45,7 @@ export default class DJContext {
    */
   public setStatus(statusCode: number) {
     if (this.strike) {
-      console.warn('穿透模式下设置 status 无效: ' + this.context.request_id)
+      console.warn('穿透模式下设置 status 无效: ')
       return
     }
     this.#status = statusCode
@@ -57,7 +57,7 @@ export default class DJContext {
    */
   public setHeaders(headers: Record<string, string>) {
     if (this.strike) {
-      console.warn('穿透模式下设置 headers 无效: ' + this.context.request_id)
+      console.warn('穿透模式下设置 headers 无效: ')
       return
     }
     Object.assign(this.#headers, headers)
@@ -92,29 +92,21 @@ export default class DJContext {
   }
 
   /**
-   * 打印日志，会携带 requestId 信息
-   * @param headers
-   */
-  public log(...msg: any[]) {
-    console.log(this.context.request_id, ...msg)
-  }
-
-  /**
    * 调用其它的云函数
    */
-  public async invoke(functionName: string, data?: Record<string, any>, option?: Record<string, string>) {
-    const sdk = new SCFSDK({ region: option?.region || 'ap-guangzhou', ...option })
-    if (!process.env.TENCENTCLOUD_SECRETID || !process.env.TENCENTCLOUD_SECRETKEY) {
-      return console.warn(this.context.request_id, '缺少环境变量')
-    }
-
-    let responseRef = { current: null }
-    try {
-      responseRef.current = await sdk.invoke({ LogType: SCFLogType.Tail, functionName, data })
-      // 穿透模式解析
-      return JSON.parse(responseRef.current.Result.RetMsg)
-    } catch (error) {
-      this.log(responseRef.current, error)
-    }
+  public async invoke(
+    serviceName: string,
+    functionName: string,
+    data?: Record<string, any>,
+    option?: Record<string, string>,
+  ) {
+    const client = new FCClient(this.context.accountId, {
+      accessKeyID: this.context.credentials.accessKeyId,
+      accessKeySecret: this.context.credentials.accessKeySecret,
+      securityToken: this.context.credentials.securityToken,
+      region: 'cn-shenzhen',
+      ...option,
+    })
+    return await client.invokeFunction(serviceName, functionName, JSON.stringify(data))
   }
 }

@@ -1,41 +1,39 @@
 import DJContext from './context'
 
 export interface SCFContext {
-  getRemainingTimeInMillis: () => void
-  memory_limit_in_mb: number
-  time_limit_in_ms: number
-  request_id: string
-  environment: string
-  environ: string
-  function_version: string
-  function_name: string
-  namespace: string
-  tencentcloud_region: string
-  tencentcloud_appid: string
-  tencentcloud_uin: string
+  requestId: string
+  credentials: {
+    accessKeyId: string
+    accessKeySecret: string
+    securityToken: string
+  }
+  function: {
+    name: string
+    handler: string
+    memory: number
+    timeout: number
+    initializer: string
+    initializationTimeout: number
+  }
+  service: {
+    name: string
+    logProject: string
+    logStore: string
+    qualifier: string
+    versionId: string
+  }
+  region: string
+  accountId: string
 }
 
 export interface SCFAPIGatewayEvent {
-  requestContext: {
-    serviceId: string
-    path: string
-    httpMethod: string
-    requestId: string
-    identity: {
-      secretId: string
-    }
-    sourceIp: string
-    stage: string
-  }
-  headers: Record<string, string>
-  body: string
-  pathParameters: Record<string, string>
-  queryStringParameters: Record<string, string>
-  headerParameters: Record<string, string>
-  stageVariables: Record<string, string>
   path: string
-  queryString: Record<string, string>
   httpMethod: string
+  headers: Record<string, string>
+  queryParameters: Record<string, string>
+  pathParameters: Record<string, string>
+  body: string
+  isBase64Encoded: boolean
 }
 
 function func(func: (context: DJContext) => Promise<void>) {
