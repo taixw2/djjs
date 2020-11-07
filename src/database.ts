@@ -5,12 +5,27 @@ export default class Database {
 
   connection: mysql.PoolConnection
 
-  async init() {
+  async init(useLocalIfExist: boolean = true) {
+    const env = process.env
+
+    const isLocal = env.local === 'true'
+    let host = env.DB_HOST
+    let user = env.DB_USER
+    let password = env.DB_PASSWORD
+    let database = env.DB_DATABASE
+
+    if (useLocalIfExist && isLocal) {
+      host = env.DB_LOCAL_HOST ?? host
+      user = env.DB_LOCAL_USER ?? user
+      password = env.DB_LOCAL_PASSWORD ?? password
+      database = env.DB_LOCAL_DATABASE ?? database
+    }
+
     this.pool = mysql.createPool({
-      host: process.env.DB_HOST,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE,
+      host,
+      user,
+      password,
+      database,
     })
   }
 
