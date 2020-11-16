@@ -53,6 +53,7 @@ function func(...middlewares: Middlewares[]) {
 const middlewares = func.bind(null, _catch) as typeof func
 
 export const date = new Date(Date.now() + 8 * 60 * 60 * 1000)
+export const getTime = ~~(date.getTime() / 1000)
 export const db = new Database()
 export default middlewares
 export { middlewares as func }

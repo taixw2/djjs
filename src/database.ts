@@ -38,6 +38,10 @@ export default class Database {
   }
 
   async query(...args: any[]) {
+    if (!this.connection) {
+      await this.initConnection()
+    }
+
     const [rows] = await this.connection.query.apply(this.connection, args)
     return rows
   }
