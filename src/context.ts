@@ -1,5 +1,5 @@
 import { SCFAPIGatewayEvent, SCFContext } from './index'
-const FCClient = require('@alicloud/fc2')
+import FCClient from '@alicloud/fc2'
 import Schema, { Rules } from 'async-validator'
 import Database from './database'
 import { Crypto } from './crypto'
@@ -7,12 +7,26 @@ import { Crypto } from './crypto'
 export default class DJContext {
   event: SCFAPIGatewayEvent
 
+  public body: {}
+
   constructor(public eventbuf: Buffer, private context: SCFContext) {
     try {
       this.event = JSON.parse(eventbuf.toString())
     } catch (error) {
       this.setResponse(100003, '参数异常')
     }
+
+    try {
+      let body = this.event.body
+      if (this.event.isBase64Encoded) {
+        body = Buffer.from(body, 'base64').toString()
+      }
+      this.body = JSON.parse(body)
+    } catch (error) {
+      // 解析 body
+    }
+    console.log('收到的参数： ', this.event)
+    console.log('收到的body： ', this.body)
   }
 
   #response = {}
@@ -34,13 +48,13 @@ export default class DJContext {
     return this.event.queryParameters ?? {}
   }
 
-  public get body() {
-    try {
-      return JSON.parse(this.event.body)
-    } catch (error) {
-      return {}
-    }
-  }
+  // public get body() {
+  //   try {
+  //     return JSON.parse(this.event.body)
+  //   } catch (error) {
+  //     return {}
+  //   }
+  // }
 
   /**
    * 获取最终响应值
