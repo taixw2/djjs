@@ -21,12 +21,14 @@ export default class DJContext {
       if (this.event.isBase64Encoded) {
         body = Buffer.from(body, 'base64').toString()
       }
-      this.body = JSON.parse(body)
+
+      if (body) {
+        this.body = JSON.parse(body)
+      }
     } catch (error) {
-      // 解析 body
+      // 解析 body 异常
+      console.log('解析 body 异常', this.event.body)
     }
-    console.log('收到的参数： ', this.event)
-    console.log('收到的body： ', this.body)
   }
 
   #response = {}
@@ -48,14 +50,6 @@ export default class DJContext {
     return this.event.queryParameters ?? {}
   }
 
-  // public get body() {
-  //   try {
-  //     return JSON.parse(this.event.body)
-  //   } catch (error) {
-  //     return {}
-  //   }
-  // }
-
   /**
    * 获取最终响应值
    */
@@ -63,6 +57,7 @@ export default class DJContext {
     if (this.strike) return this.#response
     return {
       isBase64Encoded: false,
+      headers: this.#headers,
       statusCode: this.#status,
       body: this.#response,
     }

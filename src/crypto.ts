@@ -9,8 +9,8 @@ export class Crypto {
     return md5.update(context).digest('hex')
   }
 
-  static jwt(params: any, privateKey?: string) {
-    return jwt.sign(params, privateKey, { algorithm: 'RS256' })
+  static jwt(params: any, privateKey?: string, options?: jwt.SignOptions) {
+    return jwt.sign(params, privateKey, options ?? { algorithm: 'RS256' })
   }
 
   static unjwt(token: string, privateKey?: string) {
