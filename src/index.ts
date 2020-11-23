@@ -2,6 +2,7 @@ import DJContext from './context'
 import compose from 'koa-compose'
 import _catch from './middleware/catch'
 import Database from './database'
+import { Crypto } from './crypto'
 
 export interface SCFContext {
   requestId: string
@@ -55,5 +56,8 @@ const middlewares = func.bind(null, _catch) as typeof func
 export const date = new Date(Date.now() + 8 * 60 * 60 * 1000)
 export const getTime = ~~(date.getTime() / 1000)
 export const db = new Database()
+export const crypto = Crypto
 export default middlewares
 export { middlewares as func }
+
+export * as util from './utils'
