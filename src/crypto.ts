@@ -13,7 +13,7 @@ export class Crypto {
     return jwt.sign(params, privateKey, options ?? { algorithm: 'RS256' })
   }
 
-  static unjwt(token: string, privateKey?: string) {
-    return jwt.verify(token, privateKey)
+  static unjwt(token: string, privateKey?: string, options?: jwt.VerifyOptions) {
+    return jwt.verify(token, privateKey, options)
   }
 }
