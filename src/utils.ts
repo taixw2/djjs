@@ -30,3 +30,25 @@ export const defaults = (object, ...sources) => {
   })
   return object
 }
+
+/**
+ * 取出参数中的数据，并转换成对象
+ *
+ * input { name: "abc", age: 12 }
+ * output: [
+ *  { name: "?", age: ? },
+ *  ["abc", 12]
+ * ]
+ * @param object
+ * @param sources
+ */
+export const transformQueryStructure = (object: Record<string, any>, keys: string[]) => {
+  const output: [Record<string, string>, any[]] = [{}, []]
+
+  keys.forEach((key) => {
+    output[0][key] = '?'
+    output[1].push(object[key])
+  })
+
+  return output
+}
