@@ -1,4 +1,5 @@
 import mysql from 'mysql2/promise'
+import dbBuilder, { Options } from './db-builder'
 
 export default class Database {
   pool: mysql.Pool
@@ -44,5 +45,9 @@ export default class Database {
 
     const [rows] = await this.connection.query.apply(this.connection, args)
     return rows
+  }
+
+  UNSAFE_builder(options: Options) {
+    return dbBuilder.call(this, options)
   }
 }
