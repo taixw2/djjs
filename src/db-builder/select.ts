@@ -27,7 +27,7 @@ const select = (options: Options) => {
       return where
     }, [])
 
-    where = whereConditions.join(',')
+    where = 'WHERE ' + whereConditions.join(',')
   }
 
   statement += where
