@@ -9,6 +9,7 @@ test('select', async () => {
     values: ['id', 'user'],
     condition: {
       id: '?',
+      name: '?',
     },
     limit: [0, 20],
     order: ['create_time'],

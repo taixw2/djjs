@@ -17,7 +17,7 @@ export default (options: Options) => {
 
   let where = ''
   if (options.condition && Object.keys(options.condition).length) {
-    where = Object.keys(options.condition).reduce((where, key) => {
+    const whereConditions = Object.keys(options.condition).reduce((where, key) => {
       let value = options.condition[key]
       if (isCondition(value)) {
         value = value.condition + value.value
@@ -25,10 +25,12 @@ export default (options: Options) => {
         value = ' = ' + value
       }
 
-      where += key + value
+      where.push(key + value)
 
       return where
-    }, 'WHERE ')
+    }, [])
+
+    where = whereConditions.join(',')
   }
 
   statement += where
