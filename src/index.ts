@@ -60,4 +60,5 @@ export const crypto = Crypto
 export default middlewares
 export { middlewares as func }
 
+export { ufunc } from './util.func'
 export * as util from './utils'

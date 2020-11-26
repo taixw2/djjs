@@ -3,7 +3,7 @@ import select from './select'
 import update from './update'
 
 export interface Condition {
-  condition: '=' | '<' | '>' | '>=' | '<=' | '<>'
+  condition: '=' | '<' | '>' | '>=' | '<=' | '<>' | 'in' | 'like'
   value: any
 }
 

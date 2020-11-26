@@ -17,17 +17,15 @@ const select = (options: Options) => {
     const whereConditions = Object.keys(options.condition).reduce((where, key) => {
       let value = options.condition[key]
       if (isCondition(value)) {
-        value = value.condition + value.value
+        value = ' ' + value.condition + ' ' + value.value
       } else {
         value = ' = ' + value
       }
 
       where.push(key + value)
-
       return where
     }, [])
-
-    where = 'WHERE ' + whereConditions.join(',')
+    where = 'WHERE ' + whereConditions.join(' AND ')
   }
 
   statement += where

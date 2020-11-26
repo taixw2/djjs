@@ -52,3 +52,11 @@ export const transformQueryStructure = (object: Record<string, any>, keys: strin
 
   return output
 }
+
+/**
+ * 转换 IN 语句
+ *
+ */
+export const transformQueryIn = (data: any[]) => {
+  return '(' + data.map((item) => '?') + ')'
+}
